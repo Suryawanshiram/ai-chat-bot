@@ -1,17 +1,20 @@
-import AuthButton from "@/components/ui/AuthButton";
-import { TrendingDown, Bell, Shield, Rabbit } from "lucide-react";
+import AuthButton from "@/components/AuthButton";
+import { Bell, Shield, Rabbit } from "lucide-react";
 import Image from "next/image";
 
-// import { createClient } from "@/utils/supabase/server";
+import { createClient } from "@/utils/supabase/server";
 // import { getProducts } from "./action";
 
+type AuthButtonProps = {
+  user: string | null;
+};
+
 export default async function Home() {
-  // const supabase = await createClient();
-  // const {
-  //   data: { user },
-  // } = await supabase.auth.getUser();
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   // const products = user ? await getProducts() : [];
-  const user = null;
   const products = [];
   const FEATURES = [
     {
@@ -46,7 +49,7 @@ export default async function Home() {
             />
           </div>
 
-          <AuthButton />
+          <AuthButton user={user?.id ?? null} />
           {/* <Button>Sign-in</Button> */}
         </div>
       </header>
