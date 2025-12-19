@@ -1,7 +1,8 @@
 "use client";
 
-import { Calendar, Home, Inbox, Search, Settings, LogOut } from "lucide-react";
+import { Home, MessageSquare, LogOut } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 import {
   Sidebar,
@@ -16,25 +17,28 @@ import {
 } from "@/components/ui/sidebar";
 
 import { createClient } from "@/utils/supabase/client";
-import { useEffect, useState } from "react";
+import { getUserChats } from "@/app/auth/callback/action";
+// import { getUserChats } from "@/actions/chat";
 
-const items = [
-  { title: "Home", url: "/dashboard", icon: Home },
-  { title: "Inbox", url: "/dashboard/inbox", icon: Inbox },
-  { title: "Calendar", url: "/dashboard/calendar", icon: Calendar },
-  { title: "Search", url: "/dashboard/search", icon: Search },
-  { title: "Settings", url: "/dashboard/settings", icon: Settings },
-];
+type Chat = {
+  id: string;
+  title: string;
+};
 
 export function AppSidebar() {
   const supabase = createClient();
-  const [user, setUser] = useState<any>();
+  const [user, setUser] = useState<any>(null);
+  const [chats, setChats] = useState<Chat[]>([]);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user);
     });
   }, [supabase]);
+
+  useEffect(() => {
+    getUserChats().then(setChats);
+  }, []);
 
   return (
     <Sidebar>
@@ -44,22 +48,45 @@ export function AppSidebar() {
           <SidebarGroupLabel>Application</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link href="/dashboard">
+                    <Home className="w-4 h-4" />
+                    <span>Home</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* CHAT LIST */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Chats</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {chats.map((chat) => (
+                <SidebarMenuItem key={chat.id}>
                   <SidebarMenuButton asChild>
-                    <Link href={item.url}>
-                      <item.icon className="w-4 h-4" />
-                      <span>{item.title}</span>
+                    <Link href={`/dashboard/chat/${chat.id}`}>
+                      <MessageSquare className="w-4 h-4" />
+                      <span className="truncate">{chat.title}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+
+              {chats.length === 0 && (
+                <p className="px-3 py-2 text-xs text-muted-foreground">
+                  No chats yet
+                </p>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
 
-      {/* USER SECTION AT BOTTOM */}
+      {/* USER FOOTER */}
       <SidebarFooter className="border-t p-3">
         {user && (
           <div className="flex items-center justify-between gap-3">
