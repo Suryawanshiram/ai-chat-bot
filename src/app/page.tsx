@@ -3,17 +3,22 @@ import { Bell, Shield, Rabbit } from "lucide-react";
 import Image from "next/image";
 
 import { createClient } from "@/utils/supabase/server";
+import { redirect } from "next/navigation";
 // import { getProducts } from "./action";
 
-type AuthButtonProps = {
-  user: string | null;
-};
+// type AuthButtonProps = {
+//   user: string | null;
+// };
 
 export default async function Home() {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  if (user) {
+    redirect("/dashboard");
+  }
   // const products = user ? await getProducts() : [];
   const products = [];
   const FEATURES = [
